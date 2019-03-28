@@ -7,15 +7,20 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 #include <stdio.h>
+
 #include "freertos/FreeRTOS.h"
+
 #include "freertos/task.h"
+
 #include "driver/gpio.h"
+
 #include "sdkconfig.h"
 
+#include "blink.h"
 /* Can run 'make menuconfig' to choose the GPIO to blink,
    or you can edit the following line and set a number here.
 */
-#define BLINK_GPIO 23
+
 
 void app_main()
 {
