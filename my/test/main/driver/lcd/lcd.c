@@ -92,12 +92,12 @@ void lcd_cmd(const uint8_t cmd)
 {
     esp_err_t ret;
     spi_transaction_t t;
-    memset(&t, 0, sizeof(t));                   //Zero out the transaction
-    t.length = 8;                               //Command is 8 bits
-    t.tx_buffer = &cmd;                         //The data is the cmd itself
-    t.user = (void *)0;                         //D/C needs to be set to 0
+    memset(&t, 0, sizeof(t));                       //Zero out the transaction
+    t.length = 8;                                   //Command is 8 bits
+    t.tx_buffer = &cmd;                             //The data is the cmd itself
+    t.user = (void *)0;                             //D/C needs to be set to 0
     ret = spi_device_polling_transmit(LCD_SPI, &t); //Transmit!
-    assert(ret == ESP_OK);                      //Should have had no issues.
+    assert(ret == ESP_OK);                          //Should have had no issues.
 }
 
 void lcd_data(const uint8_t *data, int len)
@@ -105,13 +105,13 @@ void lcd_data(const uint8_t *data, int len)
     esp_err_t ret;
     spi_transaction_t t;
     if (len == 0)
-        return;                                 //no need to send anything
-    memset(&t, 0, sizeof(t));                   //Zero out the transaction
-    t.length = len * 8;                         //Len is in bytes, transaction length is in bits.
-    t.tx_buffer = data;                         //Data
-    t.user = (void *)1;                         //D/C needs to be set to 1
+        return;                                     //no need to send anything
+    memset(&t, 0, sizeof(t));                       //Zero out the transaction
+    t.length = len * 8;                             //Len is in bytes, transaction length is in bits.
+    t.tx_buffer = data;                             //Data
+    t.user = (void *)1;                             //D/C needs to be set to 1
     ret = spi_device_polling_transmit(LCD_SPI, &t); //Transmit!
-    assert(ret == ESP_OK);                      //Should have had no issues.
+    assert(ret == ESP_OK);                          //Should have had no issues.
 }
 
 void lcd_spi_pre_transfer_callback(spi_transaction_t *t)
@@ -157,7 +157,19 @@ void lcd_init(void)
 void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
     esp_err_t ret;
-
+    uint16_t temp;
+    if (x1>x2) 
+    {
+        temp = x1;
+        x1 = x2;
+        x2 = temp;
+    }
+    if (y1>y2)
+    {
+        temp = y1;
+        y1 = y2;
+        y2 = temp;
+    }
     static spi_transaction_t trans[6];
 
     for (uint8_t x = 0; x < 5; x++)
@@ -204,7 +216,6 @@ void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 }
 
 spi_transaction_t trans;
-
 
 void lcd_fill(uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint16_t color)
 {
@@ -270,7 +281,7 @@ void lcd_clear(uint16_t color)
     trans.flags = 0;
     trans.user = (void *)1;
 
-    for (int i = 0; i <= 100; i++)  // bug:100会填充不满？
+    for (int i = 0; i <= 100; i++) // bug:100会填充不满？
     {
         esp_err_t ret = spi_device_queue_trans(LCD_SPI, &trans, portMAX_DELAY);
         assert(ret == ESP_OK);
@@ -285,7 +296,7 @@ void lcd_write_color(uint16_t color)
     trans.tx_data[0] = color >> 8;
     trans.tx_data[1] = color;
     trans.rxlength = 0;
-    trans.rx_buffer = NULL;  
+    trans.rx_buffer = NULL;
     spi_device_queue_trans(LCD_SPI, &trans, portMAX_DELAY);
 }
 
@@ -296,25 +307,25 @@ void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color)
 }
 void lcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
 {
-    uint16_t t;
     int xerr = 0, yerr = 0, delta_x, delta_y, distance;
     int incx, incy, row, col;
-    uint32_t i = 0;
+    
+
 
     if (y1 == y2)
     {
         lcd_address_set(x1, y1, x2, y2);
 
-        for (i = 0; i < x2 - x1; i++)
+        for (uint16_t i = 0; i < abs(x2 - x1); i++)
         {
             lcd_buf[2 * i] = color >> 8;
             lcd_buf[2 * i + 1] = color;
         }
 
         trans.tx_buffer = lcd_buf;
-        trans.length = (x2 - x1) * 2 * 8; // 鍗曚綅涓烘瘮鐗?
+        trans.length = abs(x2 - x1) * 2 * 8; // 鍗曚綅涓烘瘮鐗?
         trans.rxlength = 0;               // rxdata transfer > host maximum
-        trans.rx_buffer = NULL;           // 
+        trans.rx_buffer = NULL;           //
         trans.flags = 0;
         trans.user = (void *)1;
 
@@ -358,7 +369,7 @@ void lcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t 
     else
         distance = delta_y;
 
-    for (t = 0; t <= distance + 1; t++)
+    for (uint16_t t = 0; t <= distance + 1; t++)
     {
         lcd_draw_point(row, col, color);
         xerr += delta_x;
@@ -547,7 +558,7 @@ void lcd_show_pic(uint16_t x, uint16_t y, const uint8_t *p, uint16_t x_size, uin
     //     trans.rx_buffer = NULL; //
     //     trans.flags = 0;
     //     trans.user = (void *)1;
- 
+
     //     esp_err_t ret = spi_device_queue_trans(LCD_SPI, &trans, portMAX_DELAY);
     //     assert(ret == ESP_OK);
     // }
@@ -560,12 +571,12 @@ void lcd_show_pic(uint16_t x, uint16_t y, const uint8_t *p, uint16_t x_size, uin
 
     // esp_err_t ret = spi_device_queue_trans(LCD_SPI, &trans, portMAX_DELAY);
 
-    for(uint16_t i=0; i<x_size*y_size; i++)
+    for (uint16_t i = 0; i < x_size * y_size; i++)
     {
 
-    	picL = *(p+i*2);
-    	picH = *(p+i*2+1);
-    	lcd_write_color(picH<<8|picL);
+        picL = *(p + i * 2);
+        picH = *(p + i * 2 + 1);
+        lcd_write_color(picH << 8 | picL);
     }
 }
 void lcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color)
@@ -591,17 +602,8 @@ void lcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color)
         lcd_draw_point(x0 + a, y0 + b, color);
         lcd_draw_point(x0 - b, y0 + a, color);
 
-        printf("1: %3d   %3d\r\n", x0 - b, y0 - a);
-        printf("2: %3d   %3d\r\n", x0 + b, y0 - a);
-        printf("3: %3d   %3d\r\n", x0 - a, y0 + b);
+        printf("%3d %3d | %3d %3d | %3d %3d | %3d %3d | %3d %3d | %3d %3d | %3d %3d | %3d %3d | %3d %3d", x0 - b, y0 - a, x0 + b, y0 - a, x0 - a, y0 + b, x0 - b, y0 - a, x0 - a, y0 - b, x0 + b, y0 + a, x0 + a, y0 - b, x0 + a, y0 + b, x0 - b, y0 + a);
 
-        printf("4: %3d   %3d\r\n", x0 - b, y0 - a);
-        printf("5: %3d   %3d\r\n", x0 - a, y0 - b);
-        printf("6: %3d   %3d\r\n", x0 + b, y0 + a);
-        
-        printf("7: %3d   %3d\r\n", x0 + a, y0 - b);
-        printf("8: %3d   %3d\r\n", x0 + a, y0 + b);
-        printf("9: %3d   %3d\r\n", x0 - b, y0 + a);
         a++;
 
         if (di < 0)
@@ -613,14 +615,14 @@ void lcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color)
         }
 
         lcd_draw_point(x0 + a, y0 + b, color);
-        printf("A: %3d   %3d\r\n\r\n\r\n", x0 + a, y0 + b);
+        printf(" * %3d %3d\r\n", x0 + a, y0 + b);
     }
 }
 
 void lcd_test()
 {
     esp_err_t ret;
-    
+
     spi_bus_config_t buscfg = {
         .miso_io_num = -1,
         .mosi_io_num = PIN_NUM_MOSI,
@@ -658,38 +660,82 @@ void lcd_test()
         frame++;
 
         // lcd_clear(spi, BLUE);
-        
 
         lcd_clear(BLACK);
         // vTaskDelay(10 / portTICK_RATE_MS);
         lcd_draw_circle(119, 119, 119, WHITE);
-        lcd_draw_circle(119, 119, 94, WHITE);
+        lcd_draw_circle(119, 119, 95, WHITE);
 
-        lcd_draw_line(   119,      0,   119, 0+25, RED);    // 上
-        lcd_draw_line(   118,      0,   118, 0+25, RED);
-        lcd_draw_line(   120,      0,   120, 0+25, RED);
+        #define _C 24
+        #define _A 1
+        #define _B 1
+        lcd_draw_line(119,   0,    119, 0 + _C, RED); // 上
+        lcd_draw_line(118,   0,    118, 0 + _C, RED);
+        lcd_draw_line(120,   0,    120, 0 + _C, RED);
 
-        lcd_draw_line(   119, 239-25,   119,  239, RED);    // 下
-        lcd_draw_line(   118, 239-25,   118,  239, RED);
-        lcd_draw_line(   120, 239-25,   120,  239, RED);
+        lcd_draw_line(238, 119, 238-_C,    119, RED); // 右
+        lcd_draw_line(238, 118, 238-_C,    118, RED);
+        lcd_draw_line(238, 120, 238-_C,    120, RED);
 
-        lcd_draw_line(     0,    119,  0+25,  119, RED);    // 左
-        lcd_draw_line(     0,    118,  0+25,  118, RED);
-        lcd_draw_line(     0,    120,  0+25,  120, RED);
+        lcd_draw_line(119, 238,    119, 238-_C, RED); // 下
+        lcd_draw_line(118, 238,    118, 238-_C, RED);
+        lcd_draw_line(120, 238,    120, 238-_C, RED);
 
-        lcd_draw_line(239-25,    119,   239,  119, RED);    // 右
-        lcd_draw_line(239-25,    118,   239,  118, RED);
-        lcd_draw_line(239-25,    120,   239,  120, RED);
+        lcd_draw_line(  0, 119, 0 + _C,    119, RED); // 左
+        lcd_draw_line(  0, 118, 0 + _C,    118, RED);
+        lcd_draw_line(  0, 120, 0 + _C,    120, RED);
 
-        lcd_draw_line(15, 59,   37,  72, RED);
-        lcd_draw_line(14, 58,   36,  72, RED);
-        lcd_draw_line(13, 57,   35,  72, RED);
-        lcd_draw_line(16, 60,   38,  72, RED);
+        // lcd_draw_line(178,  16, 178-_A,  16+_B, RED);
+
+        // lcd_draw_line(222,  60, 222-_A,  60+_B, RED);
+
+        // lcd_draw_line(222, 178, 222-_A, 178-_B, RED);
+
+        // lcd_draw_line(178, 222, 178-_A, 222-_B, RED);
+/////////////////////
+        // lcd_draw_line(178,  16, 60,  222, RED);
+        
+        // lcd_draw_line(222,  60, 16,  178, RED);
+
+        // lcd_draw_line(222, 178, 16, 60, RED);
+
+        // lcd_draw_line(178, 222, 60, 16, RED);
+
+
+        // lcd_draw_line(166,  37, 72,  201, BLUE);
     
-        lcd_draw_line(59, 15,   72,  37, RED);
-        lcd_draw_line(58, 14,   71,  37, RED);
-        lcd_draw_line(57, 13,   70,  37, RED);
-        lcd_draw_line(60, 16,   73,  37, RED);
+        // lcd_draw_line(201,  72, 37,  166, BLUE);
+
+        // lcd_draw_line(201,  166, 37,  72, BLUE);
+
+        // lcd_draw_line(166,  201, 72,  37, BLUE);
+
+////////////////////////////////////
+        lcd_draw_line(178,  16, 166,  37, RED);
+        
+        lcd_draw_line(222,  60, 201,  72, RED);
+
+        lcd_draw_line(222, 178, 201,  166, RED);
+
+        lcd_draw_line(178, 222, 166,  201, RED);
+
+        lcd_draw_line(60,  222, 72,  201, RED);
+        
+        lcd_draw_line(16,  178, 37,  166, RED);
+
+        lcd_draw_line(16, 60, 37,  72, RED);
+
+        lcd_draw_line(60, 16, 72,  37, RED);
+
+            // lcd_draw_line(15, 59, 37, 72, RED);
+        // lcd_draw_line(14, 58, 36, 72, RED);
+        // lcd_draw_line(13, 57, 35, 72, RED);
+        // lcd_draw_line(16, 60, 38, 72, RED);
+
+        // lcd_draw_line(59, 15, 72, 37, RED);
+        // lcd_draw_line(58, 14, 71, 37, RED);
+        // lcd_draw_line(57, 13, 70, 37, RED);
+        // lcd_draw_line(60, 16, 73, 37, RED);
 
         // lcd_draw_line( 36,  35,   36+18,  35+18, RED);    // 左上
         // lcd_draw_line( 35,  34,   35+17,  34+17, RED);
@@ -709,8 +755,7 @@ void lcd_test()
 
         // lcd_draw_line(119, 0, 119, 0+30, WHITE);
         // lcd_draw_line(119, 0, 119, 0+30, WHITE);
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
+        vTaskDelay(20000 / portTICK_RATE_MS);
 
         // lcd_clear(color[frame % 5]);
         // // vTaskDelay(100 / portTICK_RATE_MS);
