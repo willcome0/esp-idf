@@ -57,7 +57,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
         // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
         // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
         //发送订阅
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
+        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 0);       // 改为0
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
         //取消订阅
         // msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
@@ -223,7 +223,7 @@ void key_read1(void)
         if (key_status[1] == 0)
         { //按键按下
             ESP_LOGI(TAG, "Key Pressed");
-            esp_mqtt_client_publish(client, "/topic/qos1", "I am esp32", 0, 0, 0);
+            esp_mqtt_client_publish(client, "/topic/qos1", "I am esp32", 9, 0, 0);
             //esp_mqtt_client_publish(client, "/topic/qos1", "Hello MQTT ,I am HongXu", 0, 0, 0);
         }
     }
