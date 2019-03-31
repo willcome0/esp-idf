@@ -57,7 +57,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
         // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
         // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
         //发送订阅
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 0);       // 改为0
+        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);       // 改为0
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
         //取消订阅
         // msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
@@ -71,7 +71,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
     case MQTT_EVENT_SUBSCRIBED: //MQTT发送订阅事件
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "订阅成功", 0, 0, 0);
+        msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "Subscribed success", 0, 0, 0);
         ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
         break;
     case MQTT_EVENT_UNSUBSCRIBED: //MQTT取消订阅事件
@@ -223,7 +223,7 @@ void key_read1(void)
         if (key_status[1] == 0)
         { //按键按下
             ESP_LOGI(TAG, "Key Pressed");
-            esp_mqtt_client_publish(client, "/topic/qos1", "I am esp32", 9, 0, 0);
+            esp_mqtt_client_publish(client, "/topic/qos1", "I am esp32", 0, 0, 0);
             //esp_mqtt_client_publish(client, "/topic/qos1", "Hello MQTT ,I am HongXu", 0, 0, 0);
         }
     }
@@ -263,8 +263,9 @@ void app_main()
         //自己又订阅了
         //mqtt帮我们做了一个回发测试
         //所以会收到这条信息
-        //esp_mqtt_client_publish(client, "/topic/qos1", "LED", 0, 0, 0);
-        key_read1();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        esp_mqtt_client_publish(client, "/topic/qos1", "I am ESP32", 0, 0, 0);
+        
+        // key_read1();
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }
