@@ -114,6 +114,16 @@ void *heap_caps_calloc(size_t n, size_t size, uint32_t caps);
  *                    of memory
  *
  * @return Amount of free bytes in the regions
+ * 
+ * @brief 获取具有给定功能的所有区域的总可用大小
+ * 
+ * 此功能使所有区域都能够在其中分配给定的功能，并增加它们的可用空间。
+ * 
+ * 请注意，由于堆碎片，可能无法分配此大小的单个内存块。 为此，请使用heap_caps_get_largest_free_block（）。
+ * 
+ * @param 使用指示内存类型的MALLOC_CAP_ *标志的按位OR
+ * 
+ * @return 区域中的空闲字节数
  */
 size_t heap_caps_get_free_size( uint32_t caps );
 
@@ -132,6 +142,17 @@ size_t heap_caps_get_free_size( uint32_t caps );
  *                    of memory
  *
  * @return Amount of free bytes in the regions
+ * 
+ * @brief获取具有给定功能的所有区域的总最小可用内存
+ *
+ * 这增加了能够以给定功能提供存储器的区域的所有低水位标记。
+ *
+ * 请注意，结果可能小于此类全局历史最小可用堆，因为每个区域都会跟踪“低水位线”。 
+   个别地区的堆积可能在不同时间点达到“低水位线”。 但是，这个结果仍然给出了所有时间最小空闲堆的“最坏情况”指示。
+ *
+ * @param 使用指示内存类型的MALLOC_CAP_ *标志的按位OR
+ *
+ * @return 区域中的空闲字节数
  */
 size_t heap_caps_get_minimum_free_size( uint32_t caps );
 

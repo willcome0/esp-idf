@@ -215,6 +215,7 @@ void esp_log_write(esp_log_level_t level, const char* tag, const char* format, .
 #define esp_log_buffer_hex      ESP_LOG_BUFFER_HEX
 #define esp_log_buffer_char     ESP_LOG_BUFFER_CHAR
 
+// #define CONFIG_LOG_COLORS 1
 
 #if CONFIG_LOG_COLORS
 #define LOG_COLOR_BLACK   "30"
@@ -224,6 +225,7 @@ void esp_log_write(esp_log_level_t level, const char* tag, const char* format, .
 #define LOG_COLOR_BLUE    "34"
 #define LOG_COLOR_PURPLE  "35"
 #define LOG_COLOR_CYAN    "36"
+// 自己注释掉了
 #define LOG_COLOR(COLOR)  "\033[0;" COLOR "m"
 #define LOG_BOLD(COLOR)   "\033[1;" COLOR "m"
 #define LOG_RESET_COLOR   "\033[0m"

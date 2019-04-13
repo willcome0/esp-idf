@@ -68,3 +68,9 @@ test_multi_heap_host
 
 # VS Code Settings
 .vscode/
+my/blink/build/
+my/templete/build/blink.bin
+my/templete/build/app_trace/host_file_io.d
+my/templete/build/
+my/test/build/
+my/wifi/build/
